@@ -1,6 +1,6 @@
 {
   "name": "three-premade",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Procedural, ready-to-use 3D models for three.js: cars, vehicles, furniture, buildings, people, nature and street props. Animated, configurable, tree-shakable, GLB-exportable.",
   "type": "module",
   "main": "./src/index.js",
