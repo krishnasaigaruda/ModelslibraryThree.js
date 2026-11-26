@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>rendering…</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+      "three-premade": "../src/index.js"
+    } }
+  </script>
+</head>
+<body>
+<script type="module">
+  // Renders every catalog model to docs/images/<type>-<variant>.png via the dev server.
+  import * as THREE from 'three';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+  import { listModels, createObject } from 'three-premade';
+
+  const only = new URLSearchParams(location.search).get('type');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(600, 450);
+  renderer.setClearColor(0, 0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const scene = new THREE.Scene();
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+  const sun = new THREE.DirectionalLight(0xffffff, 2.3);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.normalBias = 0.02;
+  scene.add(sun, sun.target);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.25 }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+  const cam = new THREE.PerspectiveCamera(32, 4 / 3, 0.05, 1000);
+
+  let n = 0;
+  // ?showroom=1 renders exactly the shop showroom's ~1000 models (its plinths show these pictures instantly)
+  let list = listModels();
+  if (new URLSearchParams(location.search).get('shop')) {
+    const { shopModels } = await import('../shop/picks.js');
+    const { CATALOG, CATEGORIES, resolveVariant } = await import('three-premade');
+    list = shopModels(list, CATALOG, CATEGORIES, resolveVariant);
+  } else if (new URLSearchParams(location.search).get('showroom')) {
+    const { pickShowroom } = await import('../shop/showroom.js');
+    const { CATALOG, CATEGORIES } = await import('three-premade');
+    list = Object.values(pickShowroom(list, CATALOG, CATEGORIES)).flat();
+  }
+  const resume = new URLSearchParams(location.search).get('showroom') || new URLSearchParams(location.search).get('shop');
+  for (const m of list) {
+    if (resume && (await fetch(`../docs/images/${m.type}-${m.variant}.webp`, { method: 'HEAD' })).ok) continue; // resumable runs
+    // ?type=car  or  ?type=@maps (a whole category); trims are skipped for categories
+    if (only && (only.startsWith('@') ? m.category !== only.slice(1) || m.trim : m.type !== only)) continue;
+    try {
+      const o = await createObject(m.type, { variant: m.variant, lights: false });
+      scene.add(o);
+      const box = new THREE.Box3().setFromObject(o);
+      const size = box.getSize(new THREE.Vector3());
+      const c = box.getCenter(new THREE.Vector3());
+      const r = size.length() / 2;
+      cam.position.copy(c).addScaledVector(new THREE.Vector3(1.15, 0.55, 1.35).normalize(), (r / Math.sin(THREE.MathUtils.degToRad(16))) * 0.82);
+      cam.near = r / 50;
+      cam.far = r * 50;
+      cam.updateProjectionMatrix();
+      cam.lookAt(c);
+      const R = Math.max(r * 1.6, 2);
+      Object.assign(sun.shadow.camera, { left: -R, right: R, top: R, bottom: -R, near: 0.1, far: R * 8 });
+      sun.shadow.camera.updateProjectionMatrix();
+      sun.target.position.copy(c);
+      sun.position.copy(c).add(new THREE.Vector3(0.6, 1, 0.7).normalize().multiplyScalar(R * 3));
+      renderer.render(scene, cam);
+      scene.remove(o);
+      await fetch('/__save', { method: 'POST', body: JSON.stringify({ name: `${m.type}-${m.variant}.webp`, png: renderer.domElement.toDataURL('image/webp', 0.8) }) });
+      n++;
+    } catch (e) {
+      console.error(m.type, m.variant, e);
+    }
+  }
+  document.title = `done ${n}`;
+</script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>three-premade · Guide</title>
+  <meta name="description" content="How to use three-premade in code: install, createObject, variants, colours, animations, exports and HD models." />
+  <script>try { const t = localStorage.getItem('premade-theme'); if (t) document.documentElement.dataset.theme = t; } catch {}</script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" />
+  <link rel="stylesheet" href="ui.css" />
+  <style>
+    .doc { display: grid; grid-template-columns: 240px minmax(0, 760px); gap: 56px; max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+    .toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 64px); overflow: auto; padding: 34px 0 30px; }
+    .toc h2 { font-size: 13px; color: var(--muted); font-weight: 600; margin: 0 0 10px 12px; }
+    .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+    .toc a { display: block; padding: 6px 12px; border-radius: 8px; text-decoration: none; color: var(--ink-2); font-size: 14px; border-left: 2px solid transparent; }
+    .toc a:hover { background: var(--surface-2); color: var(--ink); }
+    .toc a.on { color: var(--ink); font-weight: 600; background: var(--surface); border-left-color: #7a6cff; border-radius: 0 8px 8px 0; }
+    article { padding: 40px 0 40px; min-width: 0; }
+    .intro h1 { margin: 0; font-size: clamp(40px, 5.4vw, 68px); line-height: 0.95; letter-spacing: -0.05em; font-weight: 800; }
+    .intro p { font-size: 19px; color: var(--ink-2); margin: 18px 0 0; max-width: 38em; }
+    article section { padding-top: 46px; scroll-margin-top: 64px; }
+    article h2 { margin: 0 0 12px; font-size: 30px; letter-spacing: -0.035em; line-height: 1.1; }
+    article h3 { margin: 26px 0 8px; font-size: 18px; letter-spacing: -0.015em; }
+    article p, article li { color: var(--ink-2); font-size: 16px; line-height: 1.65; }
+    article p { margin: 0 0 14px; max-width: 68ch; }
+    article ul { padding-left: 20px; margin: 0 0 14px; }
+    article .codebox { margin: 14px 0 18px; }
+    article :not(pre) > code { font: 0.88em var(--mono); background: var(--surface-2); padding: 1px 6px; border-radius: 5px; color: var(--ink); }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 14.5px; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
+    th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-weight: 600; color: var(--ink-2); background: var(--surface-2); }
+    tr:last-child td { border-bottom: 0; }
+    td code { white-space: nowrap; }
+    .note { border-radius: 12px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid #3fc3ff; margin: 14px 0 18px; font-size: 15px; color: var(--ink-2); }
+    .note b { color: var(--ink); }
+    .entry-list { columns: 3; column-gap: 16px; padding: 0; list-style: none; }
+    .entry-list li { font-size: 14px; }
+    details { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 0 16px; margin-bottom: 8px; }
+    summary { cursor: pointer; padding: 13px 0; font-weight: 600; font-size: 15.5px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+    summary::after { content: '+'; color: var(--muted); font-weight: 400; font-size: 20px; line-height: 1; }
+    details[open] summary::after { content: '\2013'; }
+    details > div { padding-bottom: 12px; }
+    details p { font-size: 15px; }
+    .next { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 40px; }
+    @media (max-width: 900px) {
+      .doc { grid-template-columns: 1fr; gap: 0; padding: 0 16px; }
+      .toc { position: static; max-height: none; padding: 18px 0 0; }
+      .toc ol { display: flex; flex-wrap: wrap; gap: 4px; }
+      .toc a { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+      .topbar nav { display: none; }
+      .topbar .in { padding: 0 16px; }
+      .entry-list { columns: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="in">
+      <a class="mark" href="../shop/index.html"><span class="orbix" aria-hidden="true"></span>three-premade <small>guide</small></a>
+      <nav><a href="index.html">Browse models</a><a href="guide.html" aria-current="page">Guide</a><a href="../shop/index.html">Shop</a><a href="https://www.npmjs.com/package/three-premade">npm</a></nav>
+      <span class="grow"></span>
+      <button class="icon-btn" id="theme"></button>
+      <a class="btn" href="index.html">Open the browser</a>
+    </div>
+  </header>
+
+  <div class="doc">
+    <aside class="toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ol id="toc">
+        <li><a href="#install">Install</a></li>
+        <li><a href="#quick-start">Quick start</a></li>
+        <li><a href="#create">Creating objects</a></li>
+        <li><a href="#variants">Variants and versions</a></li>
+        <li><a href="#options">Colours and options</a></li>
+        <li><a href="#animations">Animations</a></li>
+        <li><a href="#lights">Lights on vehicles</a></li>
+        <li><a href="#imports">Category imports</a></li>
+        <li><a href="#preload">Preload</a></li>
+        <li><a href="#catalog">Catalog API</a></li>
+        <li><a href="#export">Export to GLB</a></li>
+        <li><a href="#stage">Stage helper</a></li>
+        <li><a href="#hd">HD Blender models</a></li>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ol>
+    </aside>
+
+    <article>
+      <div class="intro">
+        <h1>Using three-premade in code</h1>
+        <p>Every model is a regular three.js <code>Object3D</code>. This page covers installing the package, creating and configuring models, playing their animations, and keeping big scenes fast.</p>
+      </div>
+
+      <section id="install">
+        <h2>Install</h2>
+        <p>With npm (or pnpm, yarn, bun):</p>
+<pre data-lang="sh">npm install three-premade three</pre>
+        <p><code>three</code> is a peer dependency: if your project already has three.js, that copy is reused. three-premade needs three 0.160 or newer.</p>
+        <h3>Without a bundler</h3>
+        <p>Load both from a CDN with an import map. <code>three/addons/</code> is needed too, because HD models use the GLTF and Draco loaders and exports use the GLTF exporter.</p>
+<pre data-lang="html">&lt;script type="importmap"&gt;
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+  "three-premade": "https://cdn.jsdelivr.net/npm/three-premade@0.1/src/index.js"
+} }
+&lt;/script&gt;
+&lt;script type="module" src="main.js"&gt;&lt;/script&gt;</pre>
+        <div class="note"><b>ES modules need a web server.</b> Opening an HTML file straight from disk won't load modules. Use any static server, for example <code>npx serve</code> or <code>npm run serve</code> inside the package.</div>
+      </section>
+
+      <section id="quick-start">
+        <h2>Quick start</h2>
+        <p>A complete scene: renderer, camera, light, one model and a render loop that drives its animations.</p>
+<pre data-lang="js">import * as THREE from 'three';
+import { createObject, createAnimator } from 'three-premade';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#e9ebf1');
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 2));
+
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(6, 3, 7);
+camera.lookAt(0, 0.8, 0);
+
+const car = await createObject('car', { variant: 'suv', color: '#b3261e' });
+scene.add(car);
+
+const anim = createAnimator(car);
+anim.play('lights');
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  anim.update(clock.getDelta());
+  renderer.render(scene, camera);
+});</pre>
+        <p>Models are measured in metres, sit on the ground at y = 0 and cast and receive shadows by default.</p>
+      </section>
+
+      <section id="create">
+        <h2>Creating objects</h2>
+        <p><code>createObject</code> returns a <code>Promise&lt;THREE.Object3D&gt;</code>. These four calls do the same thing, so use whichever reads best in your code:</p>
+<pre data-lang="js">createObject('car', { variant: 'minivan', color: 'blue' });
+createObject('car:minivan', { color: 'blue' });
+createObject({ type: 'car', variant: 'minivan', color: 'blue' });
+createObject({ Car: 'minivan', Color: 'blue' });</pre>
+        <p>The returned object carries <code>object.animations</code> (standard <code>THREE.AnimationClip</code>s) and <code>object.userData.premade</code> with the type, variant, options and animation names.</p>
+        <h3>Options every model accepts</h3>
+        <table>
+          <tr><th>Option</th><th>What it does</th></tr>
+          <tr><td><code>variant</code></td><td>Which version, e.g. <code>'minivan'</code>. Defaults to the first one.</td></tr>
+          <tr><td><code>color</code></td><td>Main colour: a CSS name, <code>'#ff0000'</code> or <code>0xff0000</code>.</td></tr>
+          <tr><td><code>scale</code></td><td>Uniform scale multiplier.</td></tr>
+          <tr><td><code>position</code></td><td><code>[x, y, z]</code></td></tr>
+          <tr><td><code>rotation</code></td><td>Y rotation in radians, or <code>[x, y, z]</code>.</td></tr>
+          <tr><td><code>castShadow</code>, <code>receiveShadow</code></td><td>Both <code>true</code> by default.</td></tr>
+          <tr><td><code>seed</code></td><td>A different random variation for models that have one (books, trees, outfits).</td></tr>
+        </table>
+        <p>An unknown type or variant throws an error that lists the valid names.</p>
+      </section>
+
+      <section id="variants">
+        <h2>Variants and versions</h2>
+        <p>Each type has <b>variants</b> (sedan, suv, minivan) and many variants have <b>versions</b>, called trims in code (sport, luxury, offroad). Ask for a version by joining the names with a dash, or pass the <code>trim</code> option:</p>
+<pre data-lang="js">const a = await createObject('car', { variant: 'sedan-sport' });
+const b = await createObject('car', { variant: 'sedan', trim: 'sport' }); // same model
+
+const nurse = await createObject('person', { variant: 'nurse', trim: 'winter' });</pre>
+        <p>To list them, use the catalog helpers:</p>
+<pre data-lang="js">import { CATALOG, trimsOf, expandVariants, resolveVariant } from 'three-premade';
+
+CATALOG.car.variants;                    // ['sedan', 'hatchback', 'wagon', …]
+trimsOf(CATALOG.car, 'sedan');           // ['sport', 'luxury', 'offroad', …]
+expandVariants(CATALOG.car);             // every full name: 'sedan', 'sedan-sport', …
+resolveVariant(CATALOG.car, 'sedan-sport'); // { variant: 'sedan', trim: 'sport' }</pre>
+      </section>
+
+      <section id="options">
+        <h2>Colours and options per type</h2>
+        <p>On top of <code>color</code>, many types have extra colour keys and settings. <code>CATALOG[type].options</code> describes them, and the <a href="index.html">model browser</a> shows only the colour rows that change the selected model.</p>
+<pre data-lang="js">const car = await createObject('car', {
+  variant: 'coupe',
+  color: '#24477a',       // body paint
+  interiorColor: '#7a6a58',
+  rimColor: '#1d1c1a',
+  metallic: 0.8,
+  plate: 'PREMADE',
+});
+
+const bus = await createObject('bus', { variant: 'double', accentColor: '#f2c200', roofColor: 'white' });
+
+console.log(CATALOG.sofa.options); // { color: 'upholstery', accentColor: 'pillows', wood: 'legs/frame' }</pre>
+        <p>People take options such as <code>skinTone</code>, <code>hairStyle</code>, <code>shirtColor</code>, <code>hat</code>, <code>glasses</code> and <code>height</code>. Anything you don't set is picked from <code>seed</code>.</p>
+      </section>
+
+      <section id="animations">
+        <h2>Animations</h2>
+        <p><code>createAnimator(object)</code> controls the animations of one object. Call <code>update(delta)</code> every frame.</p>
+<pre data-lang="js">import { createAnimator } from 'three-premade';
+
+const anim = createAnimator(car);
+anim.names;                 // every animation this object has
+anim.play('drive');         // several can run at once
+anim.play('hazards');
+anim.toggle('lights');      // returns true when it's now playing
+anim.stop('drive');         // eases back to rest
+anim.stop();                // stop everything
+anim.setSpeed(0.25);        // slow motion for everything
+anim.setSpeed('drive', 2);  // or one animation
+anim.playing;               // names playing right now
+anim.isOneShot('steerLeft'); // true
+
+// in your render loop
+anim.update(clock.getDelta());</pre>
+        <ul>
+          <li><b>One-shot</b> animations such as <code>steerLeft</code>, <code>steerRight</code> and <code>gearUp</code> play once and hold their pose.</li>
+          <li><b>Exclusive groups</b> replace each other: <code>drive</code> and <code>reverse</code>, or <code>steerLeft</code> and <code>steerRight</code>, or <code>hazards</code> and the indicators. Pass <code>{ exclusive: true }</code> to <code>play</code> to stop everything else.</li>
+          <li><code>play(name, { loop, fade, speed })</code> takes optional settings. <code>fade</code> is the cross-fade in seconds.</li>
+        </ul>
+        <p>Cars have <code>drive</code>, <code>reverse</code>, <code>steer</code>, <code>steerLeft</code>, <code>steerRight</code>, <code>hazards</code>, <code>leftSignal</code>, <code>rightSignal</code>, <code>lights</code>, <code>brake</code>, <code>idle</code>, <code>doors</code>, <code>windows</code>, <code>bonnet</code>, <code>boot</code> and <code>wipers</code>. People have <code>walk</code>, <code>run</code>, <code>idle</code>, <code>wave</code>, <code>sit</code>, <code>dance</code> and more. Each animator controls only its own object, so one car can drive while another waits with its hazards on.</p>
+        <p>The clips are ordinary <code>AnimationClip</code>s, so your own <code>THREE.AnimationMixer</code> works too.</p>
+      </section>
+
+      <section id="lights">
+        <h2>Lights on vehicles</h2>
+        <p>Vehicles come with real spotlights for headlights. The <code>lights</code> animation switches them on, and <code>brake</code>, the indicators and <code>hazards</code> light their lamps.</p>
+<pre data-lang="js">const taxi = await createObject('car', { variant: 'taxi' });
+createAnimator(taxi).play('lights');
+
+// in a big scene, skip the spotlights; the lamp glow stays
+const parked = await createObject('car', { variant: 'sedan', lights: false });</pre>
+        <p>Every spotlight costs GPU time, so pass <code>lights: false</code> to all but a few hero vehicles.</p>
+      </section>
+
+      <section id="imports">
+        <h2>Tree-shaking and category imports</h2>
+        <p>Each category is its own module, loaded with a dynamic <code>import()</code> the first time you create something from it. Vite, webpack and Rollup split these into separate chunks automatically, and <code>"sideEffects": false</code> lets them drop anything unused.</p>
+        <p>If you prefer static imports, import a category's factory directly. These calls are synchronous:</p>
+<pre data-lang="js">import { createCar } from 'three-premade/vehicles';
+import { createPerson } from 'three-premade/people';
+
+const suv = createCar({ variant: 'suv' });
+const crowd = Array.from({ length: 20 }, (_, i) => createPerson({ seed: i, detail: 'low' }));</pre>
+        <p>Entry points:</p>
+        <ul class="entry-list" id="entries"></ul>
+        <p><code>three-premade/vehicles</code> re-exports <code>cars</code>, <code>heavy</code> and <code>transport</code>. Utilities live at <code>three-premade/catalog</code>, <code>/animation</code>, <code>/stage</code> and <code>/export</code>.</p>
+      </section>
+
+      <section id="preload">
+        <h2>Preload</h2>
+        <p>Fetch the code (or .glb) for some types ahead of time, for example behind a loading screen, so later <code>createObject</code> calls resolve without a network wait:</p>
+<pre data-lang="js">import { preload } from 'three-premade';
+
+await preload('car', 'bus', 'hd-sofa:leather-cognac');</pre>
+      </section>
+
+      <section id="catalog">
+        <h2>The catalog API</h2>
+        <p>The catalog describes every model without loading any model code, so it is cheap to import for menus and search.</p>
+<pre data-lang="js">import { CATALOG, CATEGORIES, listModels, expandVariants } from 'three-premade';
+// or: import { CATALOG } from 'three-premade/catalog';
+
+CATEGORIES;                // ['vehicles', 'furniture', …]
+CATALOG.car.label;         // 'Car'
+CATALOG.car.category;      // 'vehicles'
+CATALOG.car.options;       // option names and what they do
+expandVariants(CATALOG.car).length;
+
+const all = listModels();  // one entry per model, versions included
+// { type, variant, base, trim, category, sub, source, quality, label }
+const hd = all.filter((m) =&gt; m.quality === 'hd');</pre>
+      </section>
+
+      <section id="export">
+        <h2>Export to GLB</h2>
+        <p>Export any configured model, animations included. The exporter is only loaded when you call it.</p>
+<pre data-lang="js">import { downloadGLB, exportGLB } from 'three-premade/export';
+
+await downloadGLB(car, 'my-car.glb');   // browser download
+const bytes = await exportGLB(car);     // ArrayBuffer, e.g. to upload</pre>
+      </section>
+
+      <section id="stage">
+        <h2>The stage helper</h2>
+        <p>For demos and prototypes, <code>createStage</code> sets up a renderer, camera, orbit controls, soft lighting, a shadow-catching ground and a render loop that drives animations.</p>
+<pre data-lang="js">import { createObject } from 'three-premade';
+import { createStage } from 'three-premade/stage';
+
+const stage = await createStage(document.body, { background: '#e9ebf1' });
+const bus = await createObject('bus', { variant: 'double' });
+const anim = stage.add(bus, { play: ['drive', 'lights'] }); // returns the animator
+stage.frame(bus);
+
+// stage.scene, stage.camera, stage.renderer and stage.controls are yours to use
+// stage.dispose() removes everything</pre>
+        <p>Options: <code>background</code> (a colour), <code>ground</code>, <code>shadows</code> and <code>controls</code>; the last three default to <code>true</code>.</p>
+      </section>
+
+      <section id="hd">
+        <h2>HD Blender models</h2>
+        <p>Types that start with <code>hd-</code> are higher-detail models made in Blender and shipped as Draco-compressed .glb files inside the package (<code>hd/models/</code>). They load through the same <code>createObject</code>.</p>
+<pre data-lang="js">const sofa = await createObject('hd-sofa', { variant: 'leather-cognac', color: '#6b3a1e' });
+scene.add(sofa);</pre>
+        <p>By default they're fetched from jsDelivr's copy of the package, so they work with no bundler setup. To self-host, copy <code>node_modules/three-premade/hd/models/</code> into your public folder and point the loader at it. You can also serve the Draco decoder yourself:</p>
+<pre data-lang="js">import { setModelBaseUrl, setDracoDecoderPath } from 'three-premade';
+
+setModelBaseUrl('/assets/three-premade/hd/models/');
+setDracoDecoderPath('/draco/'); // default: the decoder on gstatic</pre>
+        <p>On HD models, <code>color</code> recolours materials named paint or primary, and <code>secondaryColor</code> recolours secondary or fabric materials.</p>
+      </section>
+
+      <section id="performance">
+        <h2>Performance tips</h2>
+        <ul>
+          <li><b>Turn off spotlights:</b> pass <code>lights: false</code> to vehicles that don't need real headlights.</li>
+          <li><b>Low-detail people:</b> <code>detail: 'low'</code> drops a person from about 30 to 40 thousand triangles to 5 to 8 thousand, which suits crowds.</li>
+          <li><b>Instance repeats:</b> for many copies of one static model (trees, cones, bollards), build it once and draw its meshes with <code>THREE.InstancedMesh</code>, reusing each mesh's geometry and material.</li>
+          <li><b>Share, don't rebuild:</b> <code>object.clone()</code> reuses geometry and materials. Call <code>createObject</code> again only when the copy needs its own colours.</li>
+          <li><b>Shadows:</b> set <code>castShadow: false</code> on small or distant props, and keep shadow map sizes modest.</li>
+          <li><b>Preload</b> the categories you need while showing a loading screen.</li>
+        </ul>
+      </section>
+
+      <section id="faq">
+        <h2>FAQ</h2>
+        <details><summary>Can I use the models in a commercial project?</summary><div><p>Yes. Every model is <b>CC0 1.0 (public domain)</b>: use, change and sell it in anything, no attribution needed. The library code itself is MIT. Every model is an original work of the project, built in code. Each object also reports <code>userData.premade.license === 'CC0-1.0'</code>.</p></div></details>
+        <details><summary>Does it work with React Three Fiber?</summary><div><p>Yes. Create the object once (for example in <code>useMemo</code> with a suspense-friendly loader, or in an effect) and render it with <code>&lt;primitive object={model} /&gt;</code>. Call the animator's <code>update</code> from <code>useFrame</code>.</p></div></details>
+        <details><summary>Why does createObject return a promise?</summary><div><p>Each category's code is downloaded on first use, and HD models are files. Category imports such as <code>three-premade/vehicles</code> give you synchronous factories if you'd rather load up front.</p></div></details>
+        <details><summary>Which way do models face, and how big are they?</summary><div><p>Sizes are in metres and models sit on the ground at y = 0. Use <code>rotation</code> to turn them.</p></div></details>
+        <details><summary>An HD model fails to load. What should I check?</summary><div><p>Check that the file exists at your <code>setModelBaseUrl</code> location as <code>&lt;type&gt;/&lt;variant&gt;.glb</code>, that <code>three/addons/</code> is in your import map, and that the Draco decoder path is reachable.</p></div></details>
+        <details><summary>How do I find the name of a model?</summary><div><p>Open the <a href="index.html">model browser</a>, pick a model and copy its code, or search <code>listModels()</code>.</p></div></details>
+      </section>
+
+      <div class="next"><a class="btn" href="index.html">Browse the models</a><a class="btn ghost" href="../shop/index.html">Back to the shop</a></div>
+    </article>
+  </div>
+
+  <footer class="foot-site">
+    <div class="ringline"></div>
+    <div class="in">
+      <div><a class="mark" href="../shop/index.html"><span class="orbix" aria-hidden="true"></span>three-premade</a><p>Original 3D models for three.js. Models CC0 (public domain), code MIT. Requires three.js 0.160 or newer.</p></div>
+      <div><h4>Library</h4><ul><li><a href="index.html">Model browser</a></li><li><a href="../shop/index.html">Shop</a></li><li><a href="CATALOG.md">Full catalog</a></li></ul></div>
+      <div><h4>Guide</h4><ul><li><a href="#install">Install</a></li><li><a href="#animations">Animations</a></li><li><a href="#hd">HD models</a></li></ul></div>
+      <div><h4>Get it</h4><ul><li><a href="https://www.npmjs.com/package/three-premade">npm</a></li><li><a href="https://threejs.org">three.js</a></li></ul></div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { enhanceCode, initTheme } from './code-ui.js';
+    initTheme(document.getElementById('theme'));
+    const ENTRIES = ['vehicles', 'cars', 'heavy', 'transport', 'furniture', 'buildings', 'nature', 'street', 'people', 'animals', 'food', 'electronics', 'fashion', 'music', 'sports', 'science', 'art', 'creatures', 'history', 'places', 'toys', 'tools', 'military'];
+    document.getElementById('entries').innerHTML = ENTRIES.map((e) => `<li><code>three-premade/${e}</code></li>`).join('');
+    enhanceCode();
+
+    // table of contents follows the section at the top of the page
+    const links = new Map([...document.querySelectorAll('#toc a')].map((a) => [a.hash.slice(1), a]));
+    const sections = [...document.querySelectorAll('article section[id]')];
+    const mark = (id) => { for (const [k, a] of links) a.classList.toggle('on', k === id); };
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) if (en.isIntersecting) mark(en.target.id);
+    }, { rootMargin: '-70px 0px -70% 0px' });
+    sections.forEach((s) => io.observe(s));
+  </script>
+</body>
+</html>

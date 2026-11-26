@@ -1,0 +1,87 @@
+{
+  "name": "three-premade",
+  "version": "0.1.1",
+  "description": "Procedural, ready-to-use 3D models for three.js: cars, vehicles, furniture, buildings, people, nature and street props. Animated, configurable, tree-shakable, GLB-exportable.",
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./vehicles": "./src/models/vehicles.js",
+    "./cars": "./src/models/cars.js",
+    "./heavy": "./src/models/heavy.js",
+    "./transport": "./src/models/transport.js",
+    "./furniture": "./src/models/furniture.js",
+    "./buildings": "./src/models/buildings.js",
+    "./people": "./src/models/people.js",
+    "./animals": "./src/models/animals.js",
+    "./nature": "./src/models/nature.js",
+    "./street": "./src/models/street.js",
+    "./catalog": "./src/catalog.js",
+    "./animation": "./src/core/animation.js",
+    "./stage": "./src/stage.js",
+    "./export": "./src/export.js",
+    "./package.json": "./package.json",
+    "./food": "./src/models/food.js",
+    "./electronics": "./src/models/electronics.js",
+    "./fashion": "./src/models/fashion.js",
+    "./music": "./src/models/music.js",
+    "./sports": "./src/models/sports.js",
+    "./science": "./src/models/science.js",
+    "./art": "./src/models/art.js",
+    "./creatures": "./src/models/creatures.js",
+    "./history": "./src/models/history.js",
+    "./places": "./src/models/places.js",
+    "./toys": "./src/models/toys.js",
+    "./tools": "./src/models/tools.js",
+    "./military": "./src/models/military.js",
+    "./items": "./src/models/items.js"
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "hd/models",
+    "README.md",
+    "LICENSE",
+    "LICENSE-MODELS.md"
+  ],
+  "scripts": {
+    "serve": "python3 scripts/serve.py 5173",
+    "test": "node test/build-all.js",
+    "thumbnails": "node scripts/thumbnails.js",
+    "docs": "node scripts/build-docs.js",
+    "prepublishOnly": "node test/build-all.js",
+    "thumbnails:check": "node scripts/thumbs-watch.js --once",
+    "build:site": "node scripts/build-site.js",
+    "deploy": "node scripts/build-site.js && npx wrangler deploy"
+  },
+  "keywords": [
+    "three",
+    "threejs",
+    "three.js",
+    "3d",
+    "models",
+    "procedural",
+    "glb",
+    "gltf",
+    "car",
+    "furniture",
+    "buildings",
+    "people",
+    "webgl"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "three": ">=0.160.0"
+  },
+  "devDependencies": {
+    "three": "^0.170.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

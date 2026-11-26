@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>three-premade · 3D models for three.js</title>
+  <meta name="description" content="Original, animated, recolourable 3D models for three.js. npm install three-premade." />
+  <script>try { const t = localStorage.getItem('premade-theme'); if (t) document.documentElement.dataset.theme = t; } catch {}</script>
+  <!--
+    REQUIREMENT: three.js. This page loads three from a CDN through the import map below.
+    If you self-host, point "three" and "three/addons/" at your own copy, and
+    "three-premade" at the package (e.g. /node_modules/three-premade/src/index.js).
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+        "three-premade": "../src/index.js"
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" />
+  <link rel="stylesheet" href="../docs/ui.css" />
+  <style>
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+    section.block { margin-top: 88px; }
+    .install { display: inline-flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font: 13px var(--mono); cursor: pointer; color: var(--ink-2); white-space: nowrap; }
+    .install:hover { border-color: var(--line-2); }
+    .install i { font-style: normal; color: var(--muted); }
+    /* big copyable install command in the hero + a floating one once you scroll past it */
+    .hero-install { display: inline-flex; align-items: stretch; margin: 4px 0 18px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line-2); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(10px); box-shadow: 0 8px 28px rgba(20, 18, 40, 0.12); }
+    .hero-install code { display: flex; align-items: center; gap: 10px; padding: 0 18px; font: 600 17px var(--mono); color: var(--ink); white-space: nowrap; }
+    .hero-install code i { font-style: normal; color: var(--muted); }
+    .hero-install button { border: 0; border-left: 1px solid var(--line); padding: 14px 18px; background: var(--ink); color: var(--surface); font: 600 14px var(--sans, inherit); cursor: pointer; }
+    .hero-install button:hover { opacity: 0.88; }
+    .hero-install a { display: flex; align-items: center; padding: 0 14px; border-left: 1px solid var(--line); color: var(--ink-2); font-size: 13px; font-weight: 600; text-decoration: none; }
+    .hero-install a:hover { color: var(--ink); }
+    .float-install { position: fixed; right: 20px; bottom: 20px; z-index: 50; display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--ink); color: var(--surface); font: 600 14px var(--mono); cursor: pointer; box-shadow: 0 12px 32px rgba(20, 18, 40, 0.28); transform: translateY(140%); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
+    .float-install.show { transform: none; opacity: 1; }
+    .float-install i { font-style: normal; opacity: 0.6; }
+    .float-install small { font: 600 12px var(--sans, inherit); opacity: 0.7; border-left: 1px solid rgba(255,255,255,0.25); padding-left: 10px; }
+    @media (max-width: 640px) { .hero-install code { font-size: 14px; padding: 0 12px; } .hero-install a { display: none; } .float-install { right: 12px; bottom: 12px; font-size: 12px; } }
+
+    /* hero: copy left, the orbix ring as a portal onto a live showroom on the right */
+    .hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 40px; align-items: center; padding-top: 56px; }
+    .hero .big-num { background: var(--ring-line); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero h1 { margin: 0; font-size: clamp(46px, 6.6vw, 94px); line-height: 0.93; letter-spacing: -0.05em; font-weight: 800; font-variation-settings: 'opsz' 96; }
+    .hero .lede { font-size: 19px; line-height: 1.5; color: var(--ink-2); max-width: 34em; margin: 22px 0 30px; }
+    .hero form { max-width: 640px; }
+    .hero .chips { margin-top: 18px; max-width: 680px; }
+    .hero .chip { text-decoration: none; }
+    .hero .facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 26px; color: var(--muted); font-size: 14px; }
+    .hero .facts a { color: var(--ink-2); }
+    .hero .facts b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+    .portal { position: relative; aspect-ratio: 1; width: 100%; max-width: 560px; justify-self: center; border-radius: 50%; padding: 22px; background: var(--ring); box-shadow: 0 40px 90px -40px rgba(122, 108, 255, 0.55); }
+    .portal .hole { position: relative; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: radial-gradient(70% 60% at 50% 35%, #2c2a3d 0%, #16141f 70%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+    .portal canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+    /* install band, right under the hero */
+    .install-band { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr); gap: 32px; align-items: center; padding: 22px; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); }
+    .install-band .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .install-band [role='tab'] { border: 0; background: none; padding: 7px 12px; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
+    .install-band [role='tab'][aria-selected='true'] { background: var(--surface-2); color: var(--ink); }
+    .install-band .cmd pre { font-size: 16px; padding: 18px 20px; }
+    .install-band #tab-cdn pre { font-size: 13px; }
+    .install-band .side-copy h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.02em; }
+    .install-band .side-copy p { margin: 0 0 16px; color: var(--muted); font-size: 14.5px; }
+    .install-band .side-copy .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    /* category tiles */
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+    .tile { position: relative; display: grid; grid-template-rows: auto 1fr; text-decoration: none; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+    .tile:hover { border-color: var(--line-2); box-shadow: var(--shadow); }
+    .tile .pic { aspect-ratio: 1.25; display: grid; place-items: center; background: radial-gradient(90% 80% at 50% 30%, color-mix(in srgb, var(--c) 28%, var(--surface)) 0%, var(--surface) 75%); }
+    .tile .pic img { width: 92%; height: 92%; object-fit: contain; }
+    .tile .t { padding: 10px 14px 13px; border-top: 3px solid var(--c); }
+    .tile b { display: block; font-size: 16px; text-transform: capitalize; letter-spacing: -0.01em; }
+    .tile small { color: var(--muted); font-size: 13px; }
+
+    /* HD band */
+    .hd-band { margin-top: 88px; background: #16141f; color: #f1f0f8; border-radius: 28px; padding: 44px 40px 40px; position: relative; overflow: hidden; --surface: #1f1d2b; --surface-2: #2a2838; --line: #302e40; --line-2: #45425a; --ink: #f1f0f8; --ink-2: #cfcde0; --muted: #a09eb4; --stage: radial-gradient(120% 85% at 50% 18%, #2c2a3d 0%, #1d1b29 70%); }
+    .hd-band::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--ring-line); }
+    .hd-band .intro { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end; margin-bottom: 26px; }
+    .hd-band h2 { margin: 0; font-size: clamp(30px, 3.6vw, 46px); letter-spacing: -0.04em; line-height: 1; }
+    .hd-band p { margin: 12px 0 0; color: var(--muted); max-width: 52ch; }
+
+    /* starter kits */
+    .kits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .kit { display: grid; grid-template-rows: auto 1fr; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-lg); overflow: hidden; }
+    .kit .mosaic { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--stage); padding: 10px; gap: 4px; }
+    .kit .mosaic a { aspect-ratio: 1; display: grid; place-items: center; border-radius: 10px; }
+    .kit .mosaic a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+    .kit .mosaic img { width: 100%; height: 100%; object-fit: contain; }
+    .kit .k-body { padding: 18px 20px 20px; display: grid; gap: 10px; align-content: start; }
+    .kit h3 { margin: 0; font-size: 20px; letter-spacing: -0.02em; }
+    .kit p { margin: 0; color: var(--muted); font-size: 14px; }
+    .kit .row-btns { display: flex; gap: 8px; margin-top: 6px; }
+
+    /* how it works */
+    .how { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
+    .steps { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 18px; counter-reset: s; }
+    .steps li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; counter-increment: s; }
+    .steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--surface); border: 1px solid var(--line); }
+    .steps b { display: block; font-size: 16px; }
+    .steps span { color: var(--muted); font-size: 14.5px; }
+    .codecard { border-radius: var(--r-lg); background: var(--code-bg); border: 1px solid var(--line); overflow: hidden; }
+    .codecard .bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px 10px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: #a09eb4; font-size: 13px; }
+    .codecard .bar .grow { flex: 1; }
+    .codecard pre.code { border-radius: 0; max-height: none; font-size: 13px; padding: 18px; }
+    .codecard .btn.ghost { background: transparent; color: #f1f0f8; border-color: rgba(255, 255, 255, 0.16); padding: 6px 12px; }
+    .h2 { margin: 0; font-size: clamp(30px, 3.6vw, 46px); letter-spacing: -0.04em; line-height: 1; }
+    .sub-lede { color: var(--muted); margin: 12px 0 0; max-width: 56ch; font-size: 16px; }
+
+    /* MIT + integrations */
+    .free { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 40px; padding: 44px 40px; border-radius: 28px; border: 1px solid var(--line); background: var(--surface); }
+    .free .big { display: inline-block; font-size: clamp(56px, 8vw, 112px); font-weight: 800; letter-spacing: -0.06em; line-height: 0.9; background: var(--ring-line); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .props { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; }
+    .props b { display: block; font-size: 16px; margin-bottom: 3px; }
+    .props span { color: var(--muted); font-size: 14.5px; }
+    .uses { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .use { padding: 18px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); display: grid; gap: 8px; align-content: start; }
+    .use b { font-size: 15px; }
+    .use code { font: 12px/1.5 var(--mono); color: var(--ink-2); background: var(--surface-2); padding: 8px 10px; border-radius: 8px; white-space: pre-wrap; word-break: break-word; }
+    .use span { color: var(--muted); font-size: 13.5px; }
+
+    .cta { margin-top: 88px; text-align: center; }
+    .cta h2 { margin: 0 0 18px; font-size: clamp(30px, 4vw, 54px); letter-spacing: -0.045em; line-height: 1; }
+    .cta .btns { display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .cta .btn { padding: 13px 20px; font-size: 15px; }
+
+    dialog.kitd { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--ink); width: min(760px, 94vw); padding: 24px; }
+    dialog.kitd::backdrop { background: rgba(10, 9, 15, 0.55); }
+    dialog.kitd h3 { margin: 0 0 12px; font-size: 22px; letter-spacing: -0.02em; }
+    dialog.kitd pre.code { max-height: 56vh; }
+    .notice { position: fixed; right: 20px; bottom: 20px; z-index: 99; background: #3b1222; color: #ffe6ee; border: 1px solid #7a2245; padding: 14px 18px; border-radius: 12px; display: none; max-width: 420px; font-size: 14px; }
+
+    @media (max-width: 1000px) {
+      .install-band { grid-template-columns: 1fr; }
+      .hero { grid-template-columns: 1fr; padding-top: 32px; }
+      .portal { max-width: 420px; order: -1; }
+      .kits { grid-template-columns: 1fr; }
+      .how, .free { grid-template-columns: 1fr; }
+      .uses { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .topbar nav, .install { display: none; }
+      .topbar .in, .wrap { padding: 0 16px; }
+      .hd-band, .free { padding: 28px 20px; border-radius: 20px; }
+      .hd-band .intro { grid-template-columns: 1fr; }
+      .props, .uses { grid-template-columns: 1fr; }
+      .orbit.big input { height: 54px; font-size: 16px; }
+    }
+    /* hero: copy across the top, the explorable 3D world right under it */
+    .hero { grid-template-columns: minmax(0, 1fr) !important; max-width: 980px; }
+    .world { position: relative; margin-top: 38px; height: min(80vh, 780px); min-height: 460px; border-radius: 28px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); box-shadow: 0 40px 90px -50px rgba(60, 50, 120, 0.45); }
+    .world canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    .world-top { position: absolute; left: 16px; right: 16px; top: 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; pointer-events: none; }
+    .world-top > div, .world-top .hint, .world-status, .dock { backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); background: color-mix(in srgb, var(--surface) 78%, transparent); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+    .world-top > div { padding: 10px 14px; border-radius: 14px; display: grid; gap: 2px; }
+    .world-top b { font-size: 17px; letter-spacing: -0.02em; }
+    .world-top span { color: var(--muted); font-size: 13px; }
+    .world-top .hint { padding: 8px 12px; border-radius: 12px; font-size: 12.5px; }
+    .dock { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; gap: 6px; overflow-x: auto; padding: 8px; border-radius: 16px; scrollbar-width: none; }
+    .dock::-webkit-scrollbar { display: none; }
+    .dock button { flex: none; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: 600 13px/1 inherit; text-transform: capitalize; cursor: pointer; }
+    .dock button:hover, .dock button[aria-pressed='true'] { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
+    .dock button i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+    .world-status { position: absolute; right: 16px; bottom: 74px; padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
+    .tip { position: fixed; z-index: 50; pointer-events: none; padding: 8px 11px; border-radius: 10px; background: #16141f; color: #f1f0f8; font-size: 13px; font-weight: 600; transform: translate(14px, 14px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+    .tip small { display: block; color: #a09eb4; font-weight: 500; text-transform: capitalize; }
+    @media (max-width: 760px) { .world { height: 70vh; border-radius: 20px; } .world-top .hint { display: none; } }
+    /* hero: a drivable city fills the whole hero; copy floats on the left */
+    .hero.hero-game { position: relative; display: block; max-width: none; min-height: min(88vh, 860px); margin-top: 22px; padding: 56px 48px 120px; border-radius: 28px; overflow: hidden; border: 1px solid var(--line); background: #bcd3e6; }
+    .hero-game canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .hero-game::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 92%, transparent) 0%, color-mix(in srgb, var(--bg) 70%, transparent) 34%, transparent 62%); z-index: 1; }
+    .hero-copy { position: relative; z-index: 2; max-width: 640px; }
+    .hero-game .hud { position: absolute; z-index: 2; right: 20px; bottom: 20px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); background: color-mix(in srgb, var(--surface) 72%, transparent); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+    .hud .speed { display: grid; justify-items: center; min-width: 58px; font-variant-numeric: tabular-nums; }
+    .hud .speed b { font-size: 24px; line-height: 1; letter-spacing: -0.03em; }
+    .hud .speed small { color: var(--muted); font-size: 11px; }
+    .hud .drive { padding: 10px 18px; }
+    .hud .hint { color: var(--muted); font-size: 13px; max-width: 300px; }
+    @media (max-width: 760px) { .hero.hero-game { padding: 32px 18px 110px; } .hero-game::before { background: color-mix(in srgb, var(--bg) 70%, transparent); } .hud .hint { display: none; } }
+    /* boot / loading screen: covers the first seconds while the hero city builds (never more than 5 s) */
+    .boot { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: var(--bg); transition: opacity 0.6s ease, visibility 0.6s; }
+    .boot.done { opacity: 0; visibility: hidden; }
+    .boot-in { display: grid; justify-items: center; gap: 14px; text-align: center; }
+    .boot-ring { width: 84px; height: 84px; border-radius: 50%; background: conic-gradient(#ff5fa2, #ff8a4c, #ffd23f, #7be36b, #3fc3ff, #7a6cff, #c86bff, #ff5fa2); -webkit-mask: radial-gradient(circle, transparent 55%, #000 57%); mask: radial-gradient(circle, transparent 55%, #000 57%); animation: boot-spin 1.1s linear infinite; filter: drop-shadow(0 10px 30px rgba(122, 108, 255, 0.4)); }
+    .boot-in b { font-size: clamp(22px, 3vw, 34px); letter-spacing: -0.03em; }
+    .boot-in small { color: var(--muted); font-size: 14px; }
+    .boot-bar { width: min(320px, 70vw); height: 6px; border-radius: 6px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; }
+    .boot-bar i { display: block; width: 4%; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #ff5fa2, #7a6cff, #3fc3ff); transition: width 0.25s ease; }
+    @keyframes boot-spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="in">
+      <a class="mark" href="#top"><span class="orbix" aria-hidden="true"></span>three-premade</a>
+      <nav>
+        <a href="../docs/index.html">Models</a>
+        <a href="../docs/index.html?quality=hd">HD</a>
+        <a href="#kits">Starter kits</a>
+        <a href="../docs/guide.html">Guide</a>
+        <a href="https://www.npmjs.com/package/three-premade">npm</a>
+      </nav>
+      <span class="grow"></span>
+      <button class="install" id="install" title="Copy install command"><i>$</i> npm i three-premade three</button>
+      <button class="icon-btn" id="theme"></button>
+      <a class="btn" href="../docs/index.html">Open the browser</a>
+    </div>
+  </header>
+
+  <div class="boot" id="boot" aria-hidden="true">
+    <div class="boot-in">
+      <span class="boot-ring"></span>
+      <b id="boot-title">Loading 31,000+ models</b>
+      <span class="boot-bar"><i id="boot-fill"></i></span>
+      <small id="boot-note">Building the city from three-premade models…</small>
+    </div>
+  </div>
+  <button class="float-install" id="float-install" title="Copy install command" aria-label="Copy npm install command"><i>$</i> npm i three-premade three <small>Copy</small></button>
+  <main id="top">
+    <div class="wrap">
+      <section class="hero hero-game">
+        <canvas id="game" aria-label="Drivable city made from three-premade models"></canvas>
+        <div class="hero-copy">
+          <h1 id="h1"><span class="big-num" id="big-num">31,000+</span> three.js models.</h1>
+          <p class="lede" id="lede">Every one original, animated and recolourable, in 21 categories plus 100+ full maps: vehicles, furniture, buildings, nature, people and more. Pick one, recolour it, play its animations, and add it to your scene in one line.</p>
+          <div class="hero-install" id="hero-install"><code><i>$</i> npm i three-premade three</code><button type="button" id="hero-copy">Copy</button><a href="https://www.npmjs.com/package/three-premade" target="_blank" rel="noopener">npm ↗</a></div>
+          <form class="orbit big" id="search-form" action="../docs/index.html" role="search">
+            <span class="field">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="q" name="q" type="search" placeholder="Search models: tractor, sofa, oak tree" autocomplete="off" aria-label="Search models" />
+              <button class="btn" type="submit">Search</button>
+            </span>
+          </form>
+          <div class="chips" id="chips"></div>
+          <div class="facts" id="facts"></div>
+        </div>
+        <div class="hud" id="hud">
+          <div class="speed"><b id="spd">0</b><small>km/h</small></div>
+          <button class="btn drive" id="drive">Drive</button>
+          <span class="hint" id="hud-hint">Every car, building, tree and light here is a three-premade model</span>
+        </div>
+      </section>
+
+      <section class="install-band" id="install-band" aria-label="Install">
+        <div>
+          <div class="tabs" role="tablist">
+            <button role="tab" aria-selected="true" aria-controls="tab-npm" id="t-npm">npm</button>
+            <button role="tab" aria-selected="false" aria-controls="tab-cdn" id="t-cdn">CDN import map</button>
+          </div>
+          <div class="cmd" id="tab-npm" role="tabpanel"><pre data-lang="sh">npm install three-premade three</pre></div>
+          <div class="cmd" id="tab-cdn" role="tabpanel" hidden><pre data-lang="html">&lt;script type="importmap"&gt;
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+  "three-premade": "https://cdn.jsdelivr.net/npm/three-premade@0.1/src/index.js"
+} }
+&lt;/script&gt;</pre></div>
+        </div>
+        <div class="side-copy">
+          <h2>Install in one command</h2>
+          <p>three.js is a peer dependency, so an existing copy in your project is reused. Works with three 0.160 and newer.</p>
+          <div class="btns"><a class="btn" href="../docs/guide.html">Read the guide</a><a class="btn ghost" href="../docs/guide.html#quick-start">Quick start</a></div>
+        </div>
+      </section>
+
+      <section class="world" aria-label="Explore the library in 3D">
+        <canvas id="world"></canvas>
+        <div class="world-top">
+          <div><b>Walk the library</b><span id="world-sub">one model from every type, in every category</span></div>
+          <span class="hint">Drag to move · right-drag to rotate · scroll to zoom · click a model to open it</span>
+        </div>
+        <div class="dock" id="dock"></div>
+        <div class="world-status" id="world-status">Loading models…</div>
+        <div class="tip" id="tip" hidden></div>
+      </section>
+
+
+      <section class="block">
+        <div class="sec-head"><h2>Browse by category</h2><a class="link" href="../docs/index.html">Browse all</a></div>
+        <div class="tiles" id="tiles"></div>
+      </section>
+
+      <section class="block">
+        <div class="sec-head"><h2>Featured</h2><span class="count">picked from the catalog</span><a class="link" href="../docs/index.html">Browse all</a></div>
+        <div class="row" id="featured"></div>
+      </section>
+
+      <section class="block">
+        <div class="sec-head"><h2>New in this release</h2><span class="count" id="new-count"></span><a class="link" href="../docs/index.html">Browse all</a></div>
+        <div class="row" id="new"></div>
+      </section>
+
+      <section class="hd-band" id="hd">
+        <div class="intro">
+          <div>
+            <h2>HD models, made in Blender.</h2>
+            <p>Higher-detail furniture shipped as compressed .glb files in a separate package, so the core library stays small. Same API: createObject, recolour, animate.</p>
+          </div>
+          <a class="btn ghost" href="../docs/index.html?quality=hd">Browse all HD</a>
+        </div>
+        <div class="row" id="hd-row"></div>
+      </section>
+
+      <section class="block" id="kits">
+        <div class="sec-head"><h2>Starter kits</h2><span class="count">a set of models and the code to place them</span></div>
+        <div class="kits" id="kits-grid"></div>
+      </section>
+
+      <section class="block how" id="how">
+        <div>
+          <h2 class="h2">Install once, then one line per model.</h2>
+          <p class="sub-lede">Models are plain three.js objects. Each category downloads only the first time you create something from it.</p>
+          <ol class="steps">
+            <li><div><b>Install</b><span>npm install three-premade three, or load both from a CDN with an import map.</span></div></li>
+            <li><div><b>Create</b><span>Call createObject with a type and variant, plus any colours you want.</span></div></li>
+            <li><div><b>Animate</b><span>createAnimator gives you play, stop and setSpeed for the model's built-in clips.</span></div></li>
+          </ol>
+        </div>
+        <div class="codecard">
+          <div class="bar"><span>main.js</span><span class="grow"></span><button class="btn ghost" id="copy-quick">Copy</button></div>
+          <pre class="code" id="quick"></pre>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="free">
+          <div>
+            <div class="big">CC0</div>
+            <p class="sub-lede"><b>Every model is public domain (CC0 1.0):</b> use it in anything, commercial included, no attribution needed. The library code is MIT. Every model is original and built by the three-premade project, no scanned or third-party assets.</p>
+          </div>
+          <div class="props">
+            <div><b>Recolour anything</b><span>Paint, trim, fabric and wood colours are options, not textures.</span></div>
+            <div><b>Animated</b><span>Doors, wheels, lights, walk cycles. Run several clips at once.</span></div>
+            <div><b>Export to .glb</b><span>Download any configured model as a binary glTF from the browser.</span></div>
+            <div><b>Small by default</b><span>Procedural models are code, not files. Categories load on demand.</span></div>
+            <div><b>Thousands of versions</b><span>Each model has variants and trims, all one option away.</span></div>
+            <div><b>three.js r160 and up</b><span>No framework lock-in and no build step required.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="sec-head"><h2>Works where three.js works</h2></div>
+        <div class="uses">
+          <div class="use"><b>Plain three.js</b><code>scene.add(await createObject('bus'))</code><span>Returns a regular Object3D.</span></div>
+          <div class="use"><b>React Three Fiber</b><code>&lt;primitive object={model} /&gt;</code><span>Create once, hand it to a primitive.</span></div>
+          <div class="use"><b>Vite and bundlers</b><code>import { createObject } from 'three-premade'</code><span>Category modules code-split automatically.</span></div>
+          <div class="use"><b>No build step</b><code>"three-premade": "…/src/index.js"</code><span>Add it to your import map next to three.</span></div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <h2>Find the model you need.</h2>
+        <div class="btns"><a class="btn" href="../docs/index.html" id="cta-all">Open the model browser</a><a class="btn ghost" href="../docs/guide.html">Read the guide</a><button class="btn ghost" id="cta-install">Copy npm install</button></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot-site">
+    <div class="ringline"></div>
+    <div class="in">
+      <div><a class="mark" href="#top"><span class="orbix" aria-hidden="true"></span>three-premade</a><p>Original 3D models for three.js. Models CC0 (public domain), code MIT. Requires three.js 0.160 or newer.</p></div>
+      <div><h4>Library</h4><ul><li><a href="../docs/index.html">Model browser</a></li><li><a href="../docs/index.html?quality=hd">HD models</a></li><li><a href="../docs/CATALOG.md">Full catalog</a></li></ul></div>
+      <div><h4>Categories</h4><ul id="foot-cats"></ul></div>
+      <div><h4>Get it</h4><ul><li><a href="https://www.npmjs.com/package/three-premade">npm</a></li><li><a href="../docs/guide.html">Guide</a></li><li><a href="#how">Quick start</a></li><li><a href="https://threejs.org">three.js</a></li></ul></div>
+    </div>
+  </footer>
+
+  <dialog class="kitd" id="kit-dialog">
+    <h3 id="kit-title">Kit code</h3>
+    <pre class="code" id="kit-code"></pre>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn" id="kit-copy">Copy</button>
+      <button class="btn ghost" onclick="this.closest('dialog').close()">Close</button>
+    </div>
+  </dialog>
+  <div class="notice" id="notice">three.js failed to load. This page needs three.js: check your connection or the import map URLs at the top of the page.</div>
+
+  <script>
+    // three.js is required: surface a clear message if the module graph fails to load.
+    window.addEventListener('error', (e) => { if (String(e.message).match(/three|import|module/i)) document.getElementById('notice').style.display = 'block'; }, true);
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { CATALOG, CATEGORIES, createObject, createAnimator, setModelBaseUrl, resolveVariant } from 'three-premade';
+    import { enhanceCode } from '../docs/code-ui.js';
+    import { $, esc, title, fullName, models, baseModels, catColor, counts, initTheme, createThumbs, cardHTML, codeBody, withImports } from '../docs/premade-ui.js';
+    // HD (Blender) models: served from this repo's hd/models/ in development
+    setModelBaseUrl(new URL('../hd/models/', location.href).href);
+
+    const BROWSER = '../docs/index.html';
+    const link = (type, variant) => `${BROWSER}#${type}/${variant}`;
+    initTheme($('theme'));
+    const copy = async (text, btn, label = 'Copied') => {
+      try { await navigator.clipboard.writeText(text); } catch { label = 'Copy blocked'; }
+      if (btn) { const old = btn.innerHTML; btn.textContent = label; setTimeout(() => (btn.innerHTML = old), 1200); }
+    };
+    $('install').onclick = () => copy('npm install three-premade three', $('install'));
+    $('cta-install').onclick = () => copy('npm install three-premade three', $('cta-install'));
+    $('hero-copy').onclick = () => copy('npm install three-premade three', $('hero-copy'));
+    $('float-install').onclick = () => copy('npm install three-premade three', $('float-install').querySelector('small'));
+    // floating install button: appears once the hero's command scrolls out of view
+    new IntersectionObserver(([e]) => $('float-install').classList.toggle('show', !e.isIntersecting && e.boundingClientRect.top < 0)).observe($('hero-install'));
+
+    /* ---------- hero copy, chips, facts ---------- */
+    const { cats } = counts();
+    const nTypes = Object.keys(CATALOG).length;
+    $('q').placeholder = `Search ${models.length.toLocaleString()} models: tractor, sofa, oak tree`;
+    $('chips').innerHTML = Object.entries(cats).map(([c, n]) =>
+      `<a class="chip" href="${BROWSER}?cat=${encodeURIComponent(c)}"><span class="dot" style="--c:${catColor(c)}"></span>${esc(c)}<small>${n.toLocaleString()}</small></a>`).join('');
+    // headline: rounded-down count, e.g. 31,567 -> "31,000+"
+    $('big-num').textContent = `${(Math.floor(models.length / 1000) * 1000).toLocaleString()}+`;
+    document.title = `three-premade · ${$('big-num').textContent} 3D models for three.js`;
+    $('facts').innerHTML = `<span><b>${models.length.toLocaleString()}</b> models</span><span><b>${nTypes}</b> types</span><span><b>${CATEGORIES.length}</b> categories</span><span><b>CC0</b> models · MIT code</span><a href="../docs/guide.html">How to use it in code</a>`;
+    $('search-form').addEventListener('submit', (e) => { if (!$('q').value.trim()) { e.preventDefault(); location.href = BROWSER; } });
+
+    /* ---------- boot screen: until the hero city is built, 5 s at most ---------- */
+    const bootStart = performance.now();
+    const bootDone = () => { if ($('boot').classList.contains('done')) return; $('boot-fill').style.width = '100%'; setTimeout(() => $('boot').classList.add('done'), 250); };
+    setTimeout(bootDone, 12000); // safety cap: reveal even on very slow machines
+    $('boot-title').textContent = `Loading ${(Math.floor(models.length / 1000) * 1000).toLocaleString()}+ models`;
+
+    /* ---------- hero mini-game ---------- */
+    (async () => {
+      const { createHeroGame } = await import('./hero-game.js');
+      const game = createHeroGame($('game'), {
+        createObject, createAnimator,
+        onHud: ({ speed, driving, building, progress, done }) => {
+          if (progress != null) $('boot-fill').style.width = `${Math.max(4, progress * 100)}%`;
+          if (done) bootDone();
+          if (speed != null) $('spd').textContent = speed;
+          if (building) { $('hud-hint').textContent = 'Building the city from three-premade models…'; return; }
+          if (driving != null) {
+            $('drive').textContent = driving ? 'Stop' : 'Drive';
+            $('hud-hint').textContent = driving ? 'W A S D or arrow keys to drive · Space to brake' : 'Every car, building, tree and light here is a three-premade model';
+          }
+        },
+      });
+      game.paused = !$('boot').classList.contains('done');
+      new MutationObserver(() => (game.paused = !$('boot').classList.contains('done'))).observe($('boot'), { attributes: true, attributeFilter: ['class'] });
+      $('drive').onclick = () => { if (game.driving) game.stop(); else { game.start(); $('drive').blur(); } };
+      // pressing W / up while hovering the hero also takes the wheel
+      $('game').closest('.hero').addEventListener('pointerenter', () => ($('game').dataset.hover = 1));
+      $('game').closest('.hero').addEventListener('pointerleave', () => delete $('game').dataset.hover);
+      addEventListener('keydown', (e) => { if (!game.driving && $('game').dataset.hover && ['KeyW', 'ArrowUp'].includes(e.code) && document.activeElement?.tagName !== 'INPUT') { e.preventDefault(); game.start(); } });
+    })();
+
+    /* ---------- explorable 3D world (replaces the old portal) ---------- */
+    (async () => {
+      const { createShowroom } = await import('./showroom.js');
+      const world = createShowroom($('world'), {
+        models, CATALOG, CATEGORIES, createObject, createAnimator, catColor, fullName, link,
+        onStatus: (n, total) => ($('world-status').textContent = `${n} of ${total.toLocaleString()} models loaded around you`),
+        onHover: (h) => {
+          const tip = $('tip');
+          if (!h) { tip.hidden = true; return; }
+          tip.hidden = false;
+          tip.innerHTML = `${esc(h.name)}<small>${esc(h.category)} · click to open</small>`;
+          tip.style.left = `${h.x}px`;
+          tip.style.top = `${h.y}px`;
+        },
+      });
+      $('world-sub').textContent = `${world.total.toLocaleString()} models from ${world.categories.length} categories`;
+      $('dock').innerHTML = world.categories.map((c) => `<button data-fly="${c}" style="--c:${catColor(c)}"><i></i>${esc(c)}</button>`).join('');
+      $('dock').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-fly]');
+        if (!b) return;
+        for (const x of $('dock').children) x.setAttribute('aria-pressed', x === b);
+        world.flyTo(b.dataset.fly);
+      });
+    })();
+
+    /* ---------- thumbnails + rows (cards link into the browser) ---------- */
+    const thumbs = createThumbs('../docs/images/');
+    const { FEATURED, KITS: KIT_SPECS, makePick, newestTypes, tileModel } = await import('./picks.js');
+    const pick = makePick(models, CATALOG, resolveVariant);
+    const fill = (el, list) => {
+      el.innerHTML = list.map((m) => cardHTML(m, { href: link(m.type, m.variant) })).join('');
+      thumbs.watch(el);
+    };
+    fill($('featured'), pick(FEATURED));
+    // newest types are appended to the catalog, so the tail is "new"
+    const newest = newestTypes(CATALOG);
+    fill($('new'), pick(newest));
+    $('new-count').textContent = `${newest.length} recently added types`;
+
+    // HD: only show models whose .glb is actually built (a cheap HEAD request each)
+    const hdModels = baseModels.filter((m) => m.quality === 'hd');
+    Promise.all(hdModels.map((m) => fetch(new URL(`../hd/models/${m.type}/${m.variant}.glb`, location.href), { method: 'HEAD' }).then((r) => r.ok).catch(() => false)))
+      .then((ok) => {
+        const built = hdModels.filter((_, i) => ok[i]);
+        if (built.length) fill($('hd-row'), built);
+        else $('hd-row').innerHTML = '<p class="empty">HD files are not built yet. Run the Blender build, then they appear here.</p>';
+      });
+
+    /* ---------- category tiles ---------- */
+    $('tiles').innerHTML = Object.entries(cats).map(([c, n]) =>
+      `<a class="tile" href="${BROWSER}?cat=${encodeURIComponent(c)}" style="--c:${catColor(c)}" data-cat="${c}"><div class="pic"><span class="spin"></span></div><div class="t"><b>${esc(c)}</b><small>${n.toLocaleString()} models</small></div></a>`).join('');
+    // tile pictures build only when the tiles scroll near (keeps the first 2 s for the hero)
+    const tio = new IntersectionObserver((en) => {
+      for (const e of en) {
+        if (!e.isIntersecting) continue;
+        tio.unobserve(e.target);
+        const c = e.target.dataset.cat;
+        const m = tileModel(c, pick, baseModels);
+        if (m) thumbs.get(m.type, m.variant).then((u) => (e.target.querySelector('.pic').innerHTML = u ? `<img alt="" src="${u}">` : ''));
+      }
+    }, { rootMargin: '200px' });
+    for (const tile of $('tiles').querySelectorAll('.tile')) tio.observe(tile);
+    $('foot-cats').innerHTML = Object.keys(cats).map((c) => `<li><a href="${BROWSER}?cat=${encodeURIComponent(c)}">${esc(c)}</a></li>`).join('');
+
+    /* ---------- starter kits ---------- */
+    const KITS = KIT_SPECS.map((k) => ({ ...k, models: pick(k.items) }));
+    $('kits-grid').innerHTML = KITS.map((k, i) => `
+      <article class="kit">
+        <div class="mosaic">${k.models.slice(0, 9).map((m) => `<a class="card-lite" href="${link(m.type, m.variant)}" title="${esc(CATALOG[m.type].label)}: ${esc(title(m.variant))}" data-type="${m.type}" data-variant="${m.variant}"><span class="spin"></span></a>`).join('')}</div>
+        <div class="k-body">
+          <h3>${esc(k.name)}</h3>
+          <p>${esc(k.blurb)} ${k.models.length} models.</p>
+          <div class="row-btns"><button class="btn" data-kit="${i}">View kit code</button><button class="btn ghost" data-kit-copy="${i}">Copy</button></div>
+        </div>
+      </article>`).join('');
+    // kit mosaics: same lazy rule as cards
+    const kio = new IntersectionObserver((en) => {
+      for (const e of en) {
+        if (!e.isIntersecting) continue;
+        kio.unobserve(e.target);
+        const { type, variant } = e.target.dataset;
+        thumbs.get(type, variant).then((u) => (e.target.innerHTML = u ? `<img alt="" src="${u}">` : ''));
+      }
+    }, { rootMargin: '300px' });
+    document.querySelectorAll('.card-lite').forEach((a) => kio.observe(a));
+    function kitCode(k) {
+      const seen = {};
+      const body = k.models.map((m, i) => {
+        let name = m.type.replace(/-(\w)/g, (_, c) => c.toUpperCase());
+        seen[name] = (seen[name] ?? 0) + 1;
+        if (seen[name] > 1) name += seen[name];
+        return `${codeBody({ type: m.type, variant: m.variant }, name)}\n${name}.position.set(${((i % 3) - 1) * 8}, 0, ${(Math.floor(i / 3) - 1) * 8});`;
+      }).join('\n\n');
+      return `// npm install three-premade three\n// ${k.name}: ${k.models.length} models on a loose 3x3 grid\n${withImports(body, false)}`;
+    }
+    $('kits-grid').addEventListener('click', (e) => {
+      const v = e.target.dataset.kit;
+      const c = e.target.dataset.kitCopy;
+      if (v != null) { $('kit-title').textContent = KITS[v].name; $('kit-code').textContent = kitCode(KITS[v]); $('kit-dialog').showModal(); }
+      if (c != null) copy(kitCode(KITS[c]), e.target);
+    });
+    $('kit-copy').onclick = () => copy($('kit-code').textContent, $('kit-copy'));
+
+    /* ---------- quick start ---------- */
+    $('quick').textContent = `import * as THREE from 'three';
+import { createObject, createAnimator } from 'three-premade';
+
+const car = await createObject('car', { variant: 'suv', color: '#b3261e' });
+scene.add(car);
+
+const anim = createAnimator(car);
+anim.play('lights');
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  anim.update(clock.getDelta());
+  renderer.render(scene, camera);
+});`;
+    $('copy-quick').onclick = () => copy($('quick').textContent, $('copy-quick'));
+    $('quick').dataset.lang = 'js';
+
+    /* ---------- install tabs + highlighted code ---------- */
+    for (const t of document.querySelectorAll('.install-band [role=tab]')) {
+      t.addEventListener('click', () => {
+        for (const x of document.querySelectorAll('.install-band [role=tab]')) {
+          x.setAttribute('aria-selected', x === t);
+          $(x.getAttribute('aria-controls')).hidden = x !== t;
+        }
+      });
+    }
+    enhanceCode();
+    // the quick-start card already has its own header copy button
+    document.querySelector('.codecard .codebox .copy')?.remove();
+  </script>
+</body>
+</html>

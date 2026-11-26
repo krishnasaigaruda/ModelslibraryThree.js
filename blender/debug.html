@@ -1,0 +1,17 @@
+<!doctype html><html><body><pre id="log"></pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/","three-premade":"../src/index.js"}}</script>
+<script type="module">
+const log = (s) => (document.getElementById('log').textContent += s + '\n');
+window.onerror = (m) => log('ERR ' + m);
+try {
+  const THREE = await import('three');
+  if (new URLSearchParams(location.search).get('gl')) { const r = new THREE.WebGLRenderer(); log('renderer'); }
+  const { createObject, setModelBaseUrl } = await import('three-premade');
+  setModelBaseUrl(new URL('../hd/models/', location.href).href);
+  const q = new URLSearchParams(location.search);
+  const o = await createObject(q.get('type'), { variant: q.get('variant') });
+  let n = 0; o.traverse((m) => { if (m.isMesh) { n++; log(`${m.name} ${m.material.name} map=${!!m.material.map} nmap=${!!m.material.normalMap} rmap=${!!m.material.roughnessMap} color=${m.material.color.getHexString()}`); } });
+  log('OK meshes=' + n);
+} catch (e) { log('FAIL ' + e.message + '\n' + e.stack); }
+log('DONE');
+</script></body></html>

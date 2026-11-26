@@ -1,0 +1,23 @@
+<!doctype html><html><body style="margin:0;background:#ddd">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { lampGroup, lampTracks, LAMP_ON } from '../src/core/lamps.js';
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); r.toneMapping = THREE.ACESFilmicToneMapping; document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#e8e6e1');
+scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 50); cam.position.set(0, 0.3, 4.2); cam.lookAt(0, 0, 0);
+const kinds = ['head', 'drl', 'tail', 'brake', 'signal', 'reverse', 'red', 'blue'];
+const mixer = [];
+kinds.forEach((k, i) => {
+  for (const on of [0, 1]) {
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.1), new THREE.MeshPhysicalMaterial({ color: '#a01010', clearcoat: 1, roughness: 0.3 }));
+    panel.position.set((i - 3.5) * 0.6, on ? -0.35 : 0.35, 0); scene.add(panel);
+    const g = lampGroup(`${k}${on}`, k);
+    g.add(panel, { at: [0, 0, 0.05], normal: [0, 0, 1], w: 0.3, h: 0.1, shape: i % 2 ? 'round' : 'rect' });
+    if (on) { g.lens.emissiveIntensity = LAMP_ON[k]; g.glow.opacity = 0.9; }
+  }
+});
+r.render(scene, cam);
+</script></body></html>

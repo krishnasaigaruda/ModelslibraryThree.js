@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>three-premade · Model Browser</title>
+  <script>try { const t = localStorage.getItem('premade-theme'); if (t) document.documentElement.dataset.theme = t; } catch {}</script>
+  <!-- three.js is required. Swap these URLs for your own copy if you self-host. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+        "three-premade": "../src/index.js"
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" />
+  <link rel="stylesheet" href="ui.css" />
+  <style>
+    .topbar .orbit { flex: 1; max-width: 620px; margin: 0 auto; }
+    .layout { display: grid; grid-template-columns: 244px minmax(0, 1fr); max-width: 1440px; margin: 0 auto; }
+    .side-nav { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 64px); overflow: auto; padding: 22px 14px 30px 24px; }
+    .side-nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; margin-bottom: 1px; border: 0; background: none; border-radius: 9px; font-size: 14.5px; cursor: pointer; text-transform: capitalize; text-align: left; }
+    .side-nav button:hover { background: var(--surface-2); }
+    .side-nav button small { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .side-nav button[aria-pressed='true'] { background: var(--inverse); color: var(--on-inverse); }
+    .side-nav button[aria-pressed='true'] small { color: inherit; opacity: 0.6; }
+    .side-nav button.sub { padding: 4px 10px 4px 37px; font-size: 13px; color: var(--muted); }
+    .side-nav button.sub:hover { color: var(--ink); }
+    .side-nav button.sub[aria-pressed='true'] { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
+    /* scroll-spy: the section at the top of the grid, while "All" (or a whole category) is selected */
+    .side-nav button.spy:not([aria-pressed='true']) { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-2); font-weight: 600; }
+    
+    .side-nav .ico { width: 17px; height: 17px; flex: none; fill: none; stroke: var(--c); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .side-nav button[aria-pressed='true'] .ico { stroke: currentColor; }
+    .side-nav .ring-all { width: 9px; height: 9px; border-radius: 50%; background: var(--ring); flex: none; }
+    main { padding: 26px 24px 40px 18px; min-width: 0; }
+    .head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 24px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+    .head h1 { margin: 0; font-size: clamp(30px, 3.6vw, 46px); line-height: 1; letter-spacing: -0.04em; text-transform: capitalize; font-weight: 750; }
+    .head .sum { color: var(--muted); font-size: 14px; margin-top: 8px; }
+    .head .sum b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .head .tools { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+    @media (max-width: 860px) {
+      .topbar nav, .topbar .mark small { display: none; }
+      .layout { grid-template-columns: 1fr; }
+      .side-nav { position: static; max-height: none; padding: 12px 16px 0; display: flex; gap: 6px; overflow-x: auto; }
+      .side-nav button { width: auto; white-space: nowrap; flex: none; }
+      .side-nav button.sub { padding-left: 10px; }
+      main { padding: 18px 16px 40px; }
+      .topbar .in { padding: 0 16px; gap: 10px; }
+      .head .tools { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="in">
+      <a class="mark" href="./"><span class="orbix" aria-hidden="true"></span>three-premade <small>model browser</small></a>
+      <label class="orbit">
+        <span class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Search models: car, sofa, police" autocomplete="off" aria-label="Search models" />
+          <kbd>/</kbd>
+        </span>
+      </label>
+      <nav><a href="./" aria-current="page">Browse</a><a href="guide.html">Guide</a><a href="../shop/index.html">Shop</a><a href="https://www.npmjs.com/package/three-premade" target="_blank" rel="noopener">npm</a></nav>
+      <button class="npm-chip" id="npm-chip" title="Copy install command"><i>$</i> npm i three-premade three</button>
+      <button class="icon-btn" id="theme"></button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="side-nav" id="nav" aria-label="Categories"></aside>
+    <main>
+      <div class="head">
+        <div>
+          <h1 id="h-title">All models</h1>
+          <div class="sum" id="h-sum"></div>
+        </div>
+        <div class="tools">
+          <div class="seg" id="quality" role="group" aria-label="Quality">
+            <button data-q="all" aria-pressed="true">All</button>
+            <button data-q="standard" aria-pressed="false">Procedural JS</button>
+            <button data-q="hd" aria-pressed="false">HD · Blender <small id="hd-count"></small></button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="versions"> Show every version</label>
+        </div>
+      </div>
+      <div id="main"></div>
+    </main>
+  </div>
+
+  <footer class="foot-site">
+    <div class="ringline"></div>
+    <div class="in">
+      <div><a class="mark" href="./"><span class="orbix" aria-hidden="true"></span>three-premade</a><p>Original 3D models for three.js, written in code. Recolour them, animate them, export them as .glb.</p></div>
+      <div><h4>Library</h4><ul><li><a href="./">Model browser</a></li><li><a href="../shop/index.html">Shop</a></li><li><a href="guide.html">Guide</a></li><li><a href="CATALOG.md">Full catalog</a></li></ul></div>
+      <div><h4>Categories</h4><ul id="foot-cats"></ul></div>
+      <div><h4>Package</h4><ul><li><a href="https://www.npmjs.com/package/three-premade">npm</a></li><li><a href="https://threejs.org">three.js</a></li></ul></div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { setModelBaseUrl } from 'three-premade';
+    import { $, esc, models, catColor, counts, filterModels, rankModels, initTheme, createThumbs, pagedGrid, createDetail } from './premade-ui.js';
+    // HD (Blender) models: served from this repo's hd/models/ in development
+    setModelBaseUrl(new URL('../hd/models/', location.href).href);
+
+    initTheme($('theme'));
+    const { cats, subs, hd } = counts();
+    $('hd-count').textContent = hd;
+    const state0 = { category: 'all', sub: null, quality: 'all', versions: false };
+
+    // Thousands of models: one card per base variant (trims live in the detail view, or tick
+    // "every version"), cards in pages (infinite scroll), pictures only when a card is visible.
+    const thumbs = createThumbs('images/');
+    /* Scroll-spy: an IntersectionObserver watches a thin band under the top bar. A heading entering
+       the band becomes the active section; one leaving it downwards (scrolling up) hands over to the
+       heading before it. No scroll handlers, no layout reads per frame. */
+    const spy = { cat: null, sub: null };
+    let headings = [];
+    const spyIO = new IntersectionObserver((entries) => {
+      let pick = null;
+      for (const en of entries) {
+        if (en.isIntersecting) pick = en.target;
+        else if (en.rootBounds && en.boundingClientRect.top >= en.rootBounds.bottom) pick ??= headings[headings.indexOf(en.target) - 1] ?? headings[0];
+      }
+      if (pick) setSpy(pick.dataset.cat, pick.dataset.sub || null);
+    }, { rootMargin: '-72px 0px -78% 0px' });
+    function setSpy(cat, sub) {
+      if (spy.cat === cat && spy.sub === sub) return;
+      Object.assign(spy, { cat, sub });
+      markSpy();
+    }
+    function markSpy() {
+      const nav = $('nav');
+      let active = null;
+      for (const b of nav.querySelectorAll('button')) {
+        const on = b.dataset.cat === spy.cat && (b.classList.contains('sub') ? b.dataset.sub === spy.sub : true);
+        b.classList.toggle('spy', on);
+        if (on) active = b;
+      }
+      // keep the active item visible inside the (independently scrolling) nav
+      // (runs only when the active section changes, so these reads are rare)
+      if (!active) return;
+      const a = active.getBoundingClientRect();
+      const n = nav.getBoundingClientRect();
+      if (nav.scrollHeight > nav.clientHeight && (a.top < n.top + 10 || a.bottom > n.bottom - 10)) {
+        nav.scrollTo({ top: nav.scrollTop + a.top - n.top - nav.clientHeight / 3, behavior: 'smooth' });
+      } else if (nav.scrollWidth > nav.clientWidth && (a.left < n.left || a.right > n.right)) { // mobile: horizontal strip
+        nav.scrollTo({ left: nav.scrollLeft + a.left - n.left - 16, behavior: 'smooth' });
+      }
+    }
+    const grid = pagedGrid($('main'), thumbs, { page: 96, grouped: true, onGroup: (h) => { headings.push(h); spyIO.observe(h); } });
+    const detail = createDetail({
+      thumbs,
+      onCategory: (c) => { Object.assign(state0, { category: c, sub: null }); $('search').value = ''; buildNav(); renderGrid(); scrollTo({ top: 0 }); },
+      onType: (t) => { Object.assign(state0, { category: 'all', sub: null }); $('search').value = t; buildNav(); renderGrid(); scrollTo({ top: 0 }); },
+    });
+
+    const ICONS = {
+      vehicles: '<path d="M4 15l1.6-4.6A2 2 0 0 1 7.5 9h9a2 2 0 0 1 1.9 1.4L20 15v3h-2.5M4 15v3h2.5M4 15h16"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/>',
+      furniture: '<path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M3 12a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3zM6 17v2M18 17v2"/>',
+      buildings: '<path d="M4 20V9l6-4v15M10 20V5h10v15M3 20h18M14 9h2M14 13h2M6.5 12h1M6.5 16h1"/>',
+      nature: '<path d="M12 21v-7M12 14c-4 0-7-3-7-7 4 0 7 3 7 7zM12 14c0-5 3-9 7-9 0 5-3 9-7 9z"/>',
+      street: '<path d="M8 21V6a3 3 0 0 1 6 0M14 6h3l1 3h-5M6 21h4"/>',
+      people: '<circle cx="12" cy="7" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/>',
+      animals: '<circle cx="6" cy="10" r="1.8"/><circle cx="10" cy="6" r="1.8"/><circle cx="14" cy="6" r="1.8"/><circle cx="18" cy="10" r="1.8"/><path d="M8 17c0-3 2-5 4-5s4 2 4 5c0 2-2 3-4 3s-4-1-4-3z"/>',
+      food: '<path d="M7 3v7a2 2 0 0 0 4 0V3M9 10v11M16 21V3c2 1 3 3 3 6s-1 4-3 4"/>',
+      electronics: '<rect x="3" y="5" width="18" height="11" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+      fashion: '<path d="M9 3l3 2 3-2 5 3-2 4-2-1v12H8V9L6 10 4 6z"/>',
+      music: '<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+      sports: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18M3 12h18M5.6 5.6c3.5 3.5 9.3 3.5 12.8 0M5.6 18.4c3.5-3.5 9.3-3.5 12.8 0"/>',
+      science: '<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3M7 15h10"/>',
+      art: '<path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15 15h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>',
+      creatures: '<path d="M4 20c0-6 3-10 8-10s8 4 8 10M8 10 6 4l4 3M16 10l2-6-4 3"/><circle cx="9.5" cy="14" r="1"/><circle cx="14.5" cy="14" r="1"/>',
+      history: '<path d="M3 21h18M4 8h16L12 3zM6 8v10M10 8v10M14 8v10M18 8v10M4 18h16"/>',
+      places: '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+      toys: '<rect x="4" y="12" width="7" height="7" rx="1"/><rect x="13" y="12" width="7" height="7" rx="1"/><rect x="8.5" y="4" width="7" height="7" rx="1"/>',
+      tools: '<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L3 18l3 3 6.2-6.2a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.3-.7-.7-2.3z"/>',
+      military: '<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/>',
+      items: '<path d="M6 8h12l-1 12H7zM9 8V6a3 3 0 0 1 6 0v2"/>',
+      maps: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14"/>',
+      other: '<circle cx="12" cy="12" r="7"/>',
+    };
+    function buildNav() {
+      const entries = [['all', models.length], ...Object.entries(cats)];
+      $('nav').innerHTML = entries.map(([c, n]) => {
+        const dot = c === 'all' ? '<span class="ring-all"></span>' : `<svg class="ico" style="--c:${catColor(c)}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[c] ?? ICONS.other}</svg>`;
+        let html = `<button data-cat="${c}" aria-pressed="${c === state0.category && !state0.sub}">${dot}${c === 'all' ? 'All models' : esc(c)}<small>${n.toLocaleString()}</small></button>`;
+        if (c === state0.category && subs[c] && Object.keys(subs[c]).length > 1) {
+          html += Object.entries(subs[c]).map(([s, k]) => `<button class="sub" data-cat="${c}" data-sub="${s}" aria-pressed="${state0.sub === s}">${esc(s)}<small>${k.toLocaleString()}</small></button>`).join('');
+        }
+        return html;
+      }).join('');
+      markSpy();
+    }
+    $('nav').addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      state0.category = b.dataset.cat;
+      state0.sub = b.dataset.sub ?? null;
+      renderGrid();
+      scrollTo({ top: 0 });
+    });
+    $('quality').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-q]');
+      if (!b) return;
+      state0.quality = b.dataset.q;
+      $('quality').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      renderGrid();
+    });
+    $('versions').addEventListener('change', (e) => { state0.versions = e.target.checked; renderGrid(); });
+    let searchTimer;
+    // the address bar follows the search box live (typing or deleting), no Enter needed
+    const syncUrl = () => {
+      const u = new URL(location.href);
+      const q = $('search').value.trim();
+      if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+      if (u.href !== location.href) history.replaceState(history.state, '', u);
+    };
+    $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { syncUrl(); renderGrid(); }, 150); });
+    addEventListener('keydown', (e) => {
+      if (e.key === '/' && !detail.isOpen() && !/input|textarea/i.test(document.activeElement.tagName)) { e.preventDefault(); $('search').focus(); }
+    });
+
+    // HD count follows the selected category (and sub-category)
+    function updateHdCount() {
+      // only the HD models in what is on screen: current category / sub-category AND search words
+      $('hd-count').textContent = filterModels({ ...state0, quality: 'hd', versions: true, q: $('search').value }).length.toLocaleString();
+    }
+    function renderGrid() {
+      updateHdCount();
+      const q = $('search').value;
+      const current = rankModels(filterModels({ ...state0, q }), q); // most relevant first
+      $('h-title').textContent = q.trim() ? `“${q.trim()}”` : state0.sub ?? (state0.category === 'all' ? 'All models' : state0.category);
+      const types = new Set(current.map((m) => m.type)).size;
+      $('h-sum').innerHTML = `<b>${current.length.toLocaleString()}</b> ${state0.versions ? 'models' : 'base models'} in <b>${types}</b> type${types === 1 ? '' : 's'}` +
+        (state0.versions ? '' : `, ${filterModels({ ...state0, q, versions: true }).length.toLocaleString()} counting every version`);
+      spyIO.disconnect();
+      headings = [];
+      Object.assign(spy, { cat: null, sub: null });
+      grid.set(current, { versions: state0.versions });
+      buildNav();
+      if (headings[0]) setSpy(headings[0].dataset.cat, headings[0].dataset.sub || null);
+    }
+    $('main').addEventListener('click', (e) => {
+      const card = e.target.closest('.card');
+      if (card) detail.open(card.dataset.type, card.dataset.variant);
+    });
+    $('foot-cats').innerHTML = Object.keys(cats).map((c) => `<li><button data-cat="${c}">${esc(c)}</button></li>`).join('');
+    $('foot-cats').addEventListener('click', (e) => {
+      const c = e.target.dataset.cat;
+      if (c) { Object.assign(state0, { category: c, sub: null }); buildNav(); renderGrid(); scrollTo({ top: 0, behavior: 'smooth' }); }
+    });
+
+    // Deep links from the shop (and anywhere else): ?q=<search>&cat=<category>&sub=<sub>&quality=hd&versions=1
+    const qs = new URLSearchParams(location.search);
+    if (qs.get('q')) $('search').value = qs.get('q');
+    if (cats[qs.get('cat')]) state0.category = qs.get('cat');
+    if (state0.category !== 'all' && subs[state0.category]?.[qs.get('sub')]) state0.sub = qs.get('sub');
+    if (['standard', 'hd'].includes(qs.get('quality'))) {
+      state0.quality = qs.get('quality');
+      $('quality').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x.dataset.q === state0.quality));
+    }
+    if (qs.get('versions') === '1') $('versions').checked = state0.versions = true;
+
+    $('npm-chip').onclick = async () => {
+      const b = $('npm-chip'), old = b.innerHTML;
+      try { await navigator.clipboard.writeText('npm install three-premade three'); b.textContent = 'Copied'; } catch { b.textContent = 'Copy blocked'; }
+      setTimeout(() => (b.innerHTML = old), 1200);
+    };
+    buildNav();
+    renderGrid();
+    detail.fromHash();
+  </script>
+</body>
+</html>

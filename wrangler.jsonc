@@ -1,0 +1,12 @@
+// Cloudflare Worker that serves the static site (shop, model browser, guide, pictures, HD .glb files).
+// Deploy: npm run deploy   (builds dist/ then runs `wrangler deploy`)
+{
+  "name": "three-premade",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // /shop → /shop/ etc.; _headers and _redirects in dist/ are honoured
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

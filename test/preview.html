@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>three-premade preview</title>
+  <!-- Dev preview: /test/preview.html?type=car[&variant=sedan][&cols=3][&angle=front|side|rear|top|three][&t=0.3] -->
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+      "three-premade": "../src/index.js"
+    } }
+  </script>
+  <style>body{margin:0;background:#cfd6da;font:12px sans-serif} canvas{display:block}</style>
+</head>
+<body>
+<script type="module">
+  import * as THREE from 'three';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+  import { CATALOG, createObject, createAnimator, expandVariants, setModelBaseUrl } from 'three-premade';
+    // HD (Blender) models: served from this repo's hd/models/ in development
+    setModelBaseUrl(new URL('../hd/models/', location.href).href);
+
+  const q = new URLSearchParams(location.search);
+  // Unregistered modules: ?module=../src/models/vehicles/truck.js&factory=createTruck&variants=X_VARIANTS
+  const mod = q.get('module') ? await import(q.get('module')) : null;
+  const type = q.get('type') ?? 'car';
+  const variants = q.get('variant') ? q.get('variant').split(',')
+    : mod ? Object.keys(mod[q.get('variants')]) : expandVariants(CATALOG[type]);
+  const make = (v, opts) => (mod ? mod[q.get('factory')]({ ...opts, variant: v }) : createObject(type, { ...opts, variant: v }));
+  const angles = (q.get('angle') ?? 'three').split(',');
+  const cols = +(q.get('cols') ?? Math.min(3, variants.length * angles.length));
+  const cellW = +(q.get('w') ?? 640);
+  const cellH = Math.round(cellW * 0.62);
+  const items = variants.flatMap((v) => angles.map((a) => ({ v, a })));
+  const rows = Math.ceil(items.length / cols);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setSize(cols * cellW, rows * cellH);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.setScissorTest(true);
+  document.body.appendChild(renderer.domElement);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const DIRS = { three: [1.1, 0.5, 1.3], right: [1.1, 0.45, -1.3], front: [1, 0.25, 0.25], side: [0, 0.18, 1], rear: [-1.1, 0.45, 1.0], top: [0.2, 1.6, 0.6], low: [1.2, 0.12, 1.0] };
+
+  for (let i = 0; i < items.length; i++) {
+    const { v, a } = items[i];
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#d9dfe2');
+    scene.environment = env;
+    const sun = new THREE.DirectionalLight(0xffffff, 2.4);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.normalBias = 0.02;
+    scene.add(sun, sun.target);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: '#c3cacd', roughness: 0.95 }));
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+    const obj = await make(v, q.get('color') ? { color: q.get('color') } : {});
+    scene.add(obj);
+    if (q.get('anim')) {
+      const an = createAnimator(obj);
+      for (const n of q.get('anim').split(',')) if (an.names.includes(n)) an.play(n, { fade: 0 });
+      an.update(+(q.get('t') ?? 0.3));
+    }
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = box.getSize(new THREE.Vector3());
+    const c = box.getCenter(new THREE.Vector3());
+    const cam = new THREE.PerspectiveCamera(30, cellW / cellH, 0.01, 1000);
+    const d = new THREE.Vector3(...DIRS[a]).normalize();
+    // Fit: project the 8 box corners into the view and back off until all of them fit the
+    // cell in both width and height (tall/thin models were being cropped before).
+    let dist = (size.length() / 2) / Math.sin(THREE.MathUtils.degToRad(15)) * 0.5;
+    const corners = [];
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) corners.push(new THREE.Vector3(x, y, z));
+    for (let it = 0; it < 40; it++) {
+      cam.position.copy(c).addScaledVector(d, dist);
+      cam.lookAt(c);
+      cam.updateMatrixWorld();
+      const m = Math.max(...corners.map((p) => { const v = p.clone().project(cam); return Math.max(Math.abs(v.x), Math.abs(v.y)); }));
+      if (m < 0.9 && m > 0.8) break;
+      dist *= m / 0.85;
+    }
+    dist *= (+(q.get('zoom') ?? 0.75)) / 0.75;
+    cam.position.copy(c).addScaledVector(d, dist);
+    cam.lookAt(c);
+    const r = size.length();
+    Object.assign(sun.shadow.camera, { left: -r, right: r, top: r, bottom: -r, near: 0.1, far: r * 10 });
+    sun.shadow.camera.updateProjectionMatrix();
+    sun.target.position.copy(c);
+    sun.position.copy(c).add(new THREE.Vector3(r * 0.8, r * 2, r * 1.2));
+    const x = (i % cols) * cellW;
+    const y = (rows - 1 - Math.floor(i / cols)) * cellH;
+    renderer.setViewport(x, y, cellW, cellH);
+    renderer.setScissor(x, y, cellW, cellH);
+    renderer.render(scene, cam);
+  }
+  document.title = 'done';
+</script>
+</body>
+</html>

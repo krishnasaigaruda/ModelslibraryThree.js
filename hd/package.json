@@ -1,0 +1,22 @@
+{
+  "name": "three-premade-hd",
+  "version": "0.1.0",
+  "description": "HD (Blender-made, baked PBR textures, Draco-compressed) .glb models for three-premade. Loaded automatically by three-premade's createObject().",
+  "keywords": [
+    "three",
+    "threejs",
+    "3d",
+    "models",
+    "glb",
+    "gltf",
+    "pbr",
+    "assets"
+  ],
+  "license": "CC0-1.0",
+  "files": [
+    "models",
+    "README.md",
+    "LICENSE",
+    "LICENSE-MODELS.md"
+  ]
+}
