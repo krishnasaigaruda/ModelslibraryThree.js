@@ -490,7 +490,7 @@ export function buildQuadruped(name, S, opts = {}) {
     paint(tailGeo, (i, p) => {
       const t = lt(tailGeo)[i];
       const c = coat(p, new THREE.Vector3(0, 1, 0), { region: 'tail', t });
-      return c.lerp(tc, smooth01((t - (tail.type === 'horse' ? 0.08 : 0.85)) / 0.06)).multiplyScalar(0.85 + 0.3 * nz(p.x * 300, p.y * 60, p.z * 300));
+      return c.lerp(tc, smooth01((t - (tail.type === 'horse' ? 0.08 : tail.type === 'trail' ? 0.02 : 0.85)) / 0.06)).multiplyScalar(0.85 + 0.3 * nz(p.x * 300, p.y * 60, p.z * 300));
     });
   }
 
@@ -824,6 +824,10 @@ function tailPath(tail, root, len, H) {
       return [p(0, 0), p(0.12, -0.28), p(0.45, -0.36), p(0.75, -0.22), p(0.92, -0.02), p(0.9, 0.12)];
     case 'pom': // rabbit cotton tail: short round puff tipped up
       return [p(0, 0), p(0.3, -0.5), p(0.55, -0.95)];
+    case 'trail': { // mouse / rat: drops off the rump to the ground, then trails behind in a lazy S
+      const e = -Math.max(0, root.y - (tail.r ?? 0.02) * H * 1.2) / len;
+      return [p(0, 0), p(e * 0.45, -0.1), p(e * 0.92, -0.26), p(e, -0.45, 0.06 * len), p(e, -0.68, -0.05 * len), p(e, -0.9, 0.04 * len), p(e, -1.0, 0.08 * len)];
+    }
     case 'paddle': { // beaver: drops to the ground then lies flat behind
       const e = -Math.max(0, root.y - (tail.r ?? 0.1) * H * 0.4) / len;
       return [p(0, 0), p(e * 0.6, -0.22), p(e * 0.97, -0.5), p(e, -0.75), p(e, -1.0)];
