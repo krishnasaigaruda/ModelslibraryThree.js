@@ -2,6 +2,10 @@
 
 **Realistic, ready-made 3D models for [three.js](https://threejs.org)**: cars, buses, trucks, aircraft, boats, furniture, buildings, people, animals, nature and street props. Every model is original and built by this project. They're animated, recolorable, exportable to `.glb`, and only downloaded when you actually use them.
 
+### 🛒 [Browse all 31,000+ models in the shop →](https://threepremade.orbixstudio.dev/shop/)
+
+[![A few of the three-premade models](https://threepremade.orbixstudio.dev/docs/images/readme-hero.jpg)](https://threepremade.orbixstudio.dev/shop/)
+
 ```js
 import { createObject, createAnimator } from 'three-premade';
 
