@@ -171,7 +171,7 @@
     @media (max-width: 760px) { .world { height: 70vh; border-radius: 20px; } .world-top .hint { display: none; } }
     /* hero: a drivable city fills the whole hero; copy floats on the left */
     .hero.hero-game { position: relative; display: block; max-width: none; min-height: min(88vh, 860px); margin-top: 22px; padding: 56px 48px 120px; border-radius: 28px; overflow: hidden; border: 1px solid var(--line); background: #bcd3e6; }
-    .hero-game canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .hero-game iframe#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border: 0; pointer-events: none; }
     .hero-game::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 92%, transparent) 0%, color-mix(in srgb, var(--bg) 70%, transparent) 34%, transparent 62%); z-index: 1; }
     .hero-copy { position: relative; z-index: 2; max-width: 640px; }
     .hero-game .hud { position: absolute; z-index: 2; right: 20px; bottom: 20px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); background: color-mix(in srgb, var(--surface) 72%, transparent); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
@@ -224,7 +224,7 @@
   <main id="top">
     <div class="wrap">
       <section class="hero hero-game">
-        <canvas id="game" aria-label="Drivable city made from three-premade models"></canvas>
+        <iframe id="game" src="game.html?embed=1" title="Premade Grand Prix race track built from three-premade models" tabindex="-1" loading="eager"></iframe>
         <div class="hero-copy">
           <h1 id="h1"><span class="big-num" id="big-num">31,000+</span> three.js models.</h1>
           <p class="lede" id="lede">Every one original, animated and recolourable, in 21 categories plus 100+ full maps: vehicles, furniture, buildings, nature, people and more. Pick one, recolour it, play its animations, and add it to your scene in one line.</p>
@@ -240,10 +240,8 @@
           <div class="facts" id="facts"></div>
         </div>
         <div class="hud" id="hud">
-          <div class="speed"><b id="spd">0</b><small>km/h</small></div>
-          <button class="btn drive" id="drive">Drive</button>
-          <a class="btn" href="game.html">Play Grand Prix 🏁</a>
-          <span class="hint" id="hud-hint">Every car, building, tree and light here is a three-premade model</span>
+          <a class="btn drive" href="game.html">Play Grand Prix 🏁</a>
+          <span class="hint" id="hud-hint">A 6-car race where every car, building, tree and animal is a three-premade model</span>
         </div>
       </section>
 
@@ -426,30 +424,15 @@
     setTimeout(bootDone, 12000); // safety cap: reveal even on very slow machines
     $('boot-title').textContent = `Loading ${(Math.floor(models.length / 1000) * 1000).toLocaleString()}+ models`;
 
-    /* ---------- hero mini-game ---------- */
-    (async () => {
-      const { createHeroGame } = await import('./hero-game.js');
-      const game = createHeroGame($('game'), {
-        createObject, createAnimator,
-        onHud: ({ speed, driving, building, progress, done }) => {
-          if (progress != null) $('boot-fill').style.width = `${Math.max(4, progress * 100)}%`;
-          if (done) bootDone();
-          if (speed != null) $('spd').textContent = speed;
-          if (building) { $('hud-hint').textContent = 'Building the city from three-premade models…'; return; }
-          if (driving != null) {
-            $('drive').textContent = driving ? 'Stop' : 'Drive';
-            $('hud-hint').textContent = driving ? 'W A S D or arrow keys to drive · Space to brake' : 'Every car, building, tree and light here is a three-premade model';
-          }
-        },
-      });
-      game.paused = !$('boot').classList.contains('done');
-      new MutationObserver(() => (game.paused = !$('boot').classList.contains('done'))).observe($('boot'), { attributes: true, attributeFilter: ['class'] });
-      $('drive').onclick = () => { if (game.driving) game.stop(); else { game.start(); $('drive').blur(); } };
-      // pressing W / up while hovering the hero also takes the wheel
-      $('game').closest('.hero').addEventListener('pointerenter', () => ($('game').dataset.hover = 1));
-      $('game').closest('.hero').addEventListener('pointerleave', () => delete $('game').dataset.hover);
-      addEventListener('keydown', (e) => { if (!game.driving && $('game').dataset.hover && ['KeyW', 'ArrowUp'].includes(e.code) && document.activeElement?.tagName !== 'INPUT') { e.preventDefault(); game.start(); } });
-    })();
+    /* ---------- hero: Premade Grand Prix (game.html?embed=1) ---------- */
+    {
+      const frame = $('game');
+      addEventListener('message', (e) => { if (e.origin === location.origin && e.data?.gameReady) bootDone(); });
+      const send = (paused) => frame.contentWindow?.postMessage({ paused }, location.origin);
+      let visible = true;
+      new IntersectionObserver(([en]) => { visible = en.isIntersecting; send(!visible || !$('boot').classList.contains('done')); }).observe(frame);
+      new MutationObserver(() => send(!visible || !$('boot').classList.contains('done'))).observe($('boot'), { attributes: true, attributeFilter: ['class'] });
+    }
 
     /* ---------- explorable 3D world (replaces the old portal) ---------- */
     (async () => {
